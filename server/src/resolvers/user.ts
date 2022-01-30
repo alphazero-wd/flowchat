@@ -1,5 +1,14 @@
 import { LoginInput, RegisterInput, UserResponse } from "../types/user";
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  FieldResolver,
+  Mutation,
+  Query,
+  Resolver,
+  Root,
+  UseMiddleware,
+} from "type-graphql";
 import { validateField } from "../utils/validate";
 import {
   VALID_EMAIL_REGEX,
@@ -8,12 +17,23 @@ import {
 } from "../utils/constants";
 import { User } from "../entities/User";
 import { compare, hash } from "bcryptjs";
+import { MyContext } from "../types/MyContext";
+import { auth } from "../middlewares/auth";
+import { createAccessToken } from "../utils/token";
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
-  @Query(() => String)
-  hello() {
-    return "Hello World";
+  @UseMiddleware(auth)
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { req }: MyContext) {
+    const user = await User.findOne(req.payload?.userId);
+    if (!user) return null;
+    return user;
+  }
+
+  @FieldResolver(() => String)
+  token(@Root() user: User) {
+    return createAccessToken(user);
   }
 
   @Mutation(() => UserResponse)
