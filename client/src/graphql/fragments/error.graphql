@@ -1,0 +1,4 @@
+fragment Error on ErrorResponse {
+  field
+  message
+}

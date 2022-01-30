@@ -1,13 +1,21 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Login from "./components/pages/Login";
-import Register from "./components/pages/Register";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import { useMeQuery } from "./generated/graphql";
 
 function App() {
+  const { data } = useMeQuery();
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/register"
+          element={!data?.me ? <Register /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/login"
+          element={!data?.me ? <Login /> : <Navigate to="/" />}
+        />
       </Routes>
     </BrowserRouter>
   );
